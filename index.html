@@ -170,6 +170,201 @@
   .meal-row { margin-bottom: 8px; }
   .meal-row .meal-label { font-size: 10px; color: var(--stone-mid); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
   .meal-row .meal-name { font-size: 13px; color: var(--stone); line-height: 1.3; margin-top: 1px; }
+  .meal-row { cursor: pointer; border-radius: 6px; padding: 4px; margin: 0 -4px 4px; transition: background 0.12s; }
+  .meal-row:active { background: var(--sage-light); }
+  .recipe-cue { color: var(--sage); font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .plan-hint { font-size: 12px; color: var(--blush); margin-bottom: 12px; font-weight: 500; }
+
+  /* RECIPE MODAL */
+  .recipe-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(74,70,64,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .recipe-sheet {
+    background: var(--cream);
+    width: 100%;
+    max-width: 500px;
+    max-height: 88vh;
+    border-radius: 22px 22px 0 0;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .recipe-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--stone-light);
+    flex-shrink: 0;
+  }
+  .recipe-title { font-size: 18px; font-weight: 700; color: var(--sage); line-height: 1.2; padding-right: 12px; }
+  .recipe-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--stone-light);
+    color: var(--stone);
+    font-size: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .recipe-body {
+    padding: 18px 20px calc(28px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .recipe-meta {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .recipe-meta-item {
+    font-size: 13px;
+    color: var(--stone-mid);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .recipe-safety {
+    background: var(--safe-bg);
+    border-left: 4px solid var(--safe-green);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: var(--safe-green);
+    line-height: 1.5;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+  }
+  .recipe-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--stone-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 18px 0 10px;
+  }
+  .recipe-ingredients {
+    list-style: none;
+  }
+  .recipe-ingredients li {
+    font-size: 15px;
+    color: var(--stone);
+    padding: 8px 0 8px 26px;
+    border-bottom: 1px solid var(--stone-light);
+    position: relative;
+    line-height: 1.4;
+  }
+  .recipe-ingredients li:before {
+    content: '';
+    position: absolute;
+    left: 6px; top: 15px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+  }
+  .recipe-steps {
+    padding-left: 0;
+    counter-reset: step;
+    list-style: none;
+  }
+  .recipe-steps li {
+    font-size: 15px;
+    color: var(--stone);
+    line-height: 1.6;
+    padding: 0 0 16px 40px;
+    position: relative;
+    counter-increment: step;
+  }
+  .recipe-steps li:before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--sage);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .recipe-nutrition {
+    background: var(--blush-light);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--blush);
+    line-height: 1.5;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* COPY BOX + HOW-TO + TOAST */
+  .copy-box {
+    background: var(--cream);
+    border: 1.5px solid var(--stone-light);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--stone);
+  }
+  .howto-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--stone);
+    line-height: 1.5;
+    padding: 6px 0;
+  }
+  .howto-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--sage);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .copy-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--nav-h) + 20px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(20px);
+    background: var(--stone);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11px 18px;
+    border-radius: 50px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 300;
+    max-width: 90%;
+    text-align: center;
+  }
+  .copy-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 
   /* ── FOOD CHECKER ── */
   .upload-zone {
@@ -422,38 +617,29 @@
 <!-- ② FOOD CHECKER -->
 <div class="page" id="page-checker">
   <div class="tip-pill">📸 Photo food checker</div>
-  <p style="font-size:14px;color:var(--stone-mid);margin-bottom:16px;line-height:1.5">Take a photo of any food or meal and Claude will tell you if it's safe to eat during your pregnancy.</p>
+  <p style="font-size:14px;color:var(--stone-mid);margin-bottom:18px;line-height:1.6">Not sure if something's safe to eat? Snap a photo and ask Claude — it checks against NZ Ministry of Health pregnancy guidelines.</p>
 
-  <div class="upload-zone" onclick="document.getElementById('photo-input').click()">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-    </svg>
-    <p>Take a photo or choose from library</p>
-    <span>Tap to open camera</span>
-  </div>
-  <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhoto(event)">
-
-  <img id="preview-img" class="preview-img" alt="Food photo preview">
-
-  <div class="spinner" id="check-spinner">
-    <div class="spinner-ring"></div>
-    Checking food safety…
+  <div class="card" style="background:var(--sage-light);border:none">
+    <div style="font-size:15px;font-weight:600;color:var(--sage);margin-bottom:12px">How to check a food in 3 steps</div>
+    <div class="howto-step"><span class="howto-num">1</span><span>Open the <strong>Claude app</strong> on your phone</span></div>
+    <div class="howto-step"><span class="howto-num">2</span><span>Tap the <strong>camera</strong> or photo icon and take a picture of the food</span></div>
+    <div class="howto-step"><span class="howto-num">3</span><span>Send it with the question below</span></div>
   </div>
 
-  <div class="result-banner" id="result-banner">
-    <div class="verdict" id="result-verdict"></div>
-    <div class="detail" id="result-detail"></div>
+  <div class="card">
+    <div class="card-title">Copy this question</div>
+    <div class="copy-box" id="check-question">Is this food safe to eat during pregnancy in New Zealand? Please follow NZ Ministry of Health guidelines and tell me if it's safe, needs caution, or to avoid it.</div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:10px" onclick="copyCheck()">📋 Copy question</button>
   </div>
 
-  <div id="result-actions" style="display:none">
-    <button class="btn btn-outline" onclick="resetChecker()" style="margin-top:4px">Check another food</button>
-  </div>
+  <a href="https://claude.ai/download" class="btn btn-blush" style="text-decoration:none;margin-top:4px">Open the Claude app →</a>
 
-  <div class="card" style="margin-top:8px">
-    <div class="card-title">How it works</div>
-    <div style="font-size:13px;color:var(--stone-mid);line-height:1.7">
-      Claude analyses your photo and cross-checks it against NZ Ministry of Health pregnancy food safety guidelines — including listeria risks, mercury levels, safe cooking temperatures, and more.
+  <div class="card" style="margin-top:14px">
+    <div class="card-title">Quick reference — common foods</div>
+    <div style="font-size:13px;line-height:1.9;color:var(--stone)">
+      ✅ Hard cheeses, cooked seafood, well-cooked eggs, pasteurised milk<br>
+      ⚠️ Sushi, soft-serve ice cream, pre-packaged salads, leftovers (reheat well)<br>
+      🚫 Brie/camembert (uncooked), pâté, raw fish, deli meats, runny eggs
     </div>
   </div>
 </div>
@@ -470,26 +656,29 @@
 
 <!-- ④ ASK CLAUDE -->
 <div class="page" id="page-ask">
-  <div class="ask-input-wrap">
-    <input type="text" id="ask-input" placeholder="Ask anything about pregnancy nutrition…" onkeydown="if(event.key==='Enter')askQuestion()">
-    <button onclick="askQuestion()">→</button>
-  </div>
+  <p style="font-size:14px;color:var(--stone-mid);margin-bottom:16px;line-height:1.6">Tap a question to copy it, then paste it into the Claude app for a full, up-to-date answer based on NZ guidelines.</p>
   <div class="chip-row">
-    <div class="chip" onclick="setAsk(this)">Foods high in folate</div>
-    <div class="chip" onclick="setAsk(this)">Safe NZ seafood</div>
-    <div class="chip" onclick="setAsk(this)">Iron-rich meals</div>
-    <div class="chip" onclick="setAsk(this)">Nausea snack ideas</div>
-    <div class="chip" onclick="setAsk(this)">Foods to avoid</div>
-    <div class="chip" onclick="setAsk(this)">Iodine sources in NZ</div>
-    <div class="chip" onclick="setAsk(this)">Calcium without dairy</div>
-    <div class="chip" onclick="setAsk(this)">What supplements do I need</div>
+    <div class="chip" onclick="copyAsk(this)">Foods high in folate</div>
+    <div class="chip" onclick="copyAsk(this)">Safe NZ seafood while pregnant</div>
+    <div class="chip" onclick="copyAsk(this)">Iron-rich pregnancy meals</div>
+    <div class="chip" onclick="copyAsk(this)">Snack ideas for pregnancy nausea</div>
+    <div class="chip" onclick="copyAsk(this)">Foods to avoid in pregnancy NZ</div>
+    <div class="chip" onclick="copyAsk(this)">Iodine sources in NZ</div>
+    <div class="chip" onclick="copyAsk(this)">Calcium without dairy</div>
+    <div class="chip" onclick="copyAsk(this)">What supplements do I need</div>
   </div>
-  <div class="spinner" id="ask-spinner">
-    <div class="spinner-ring"></div>
-    Getting your answer…
+  <div class="card">
+    <div class="card-title">Your question</div>
+    <div class="copy-box" id="ask-box">Tap a question above, or type your own here to copy.</div>
+    <div class="ask-input-wrap" style="margin-top:12px;margin-bottom:0">
+      <input type="text" id="ask-input" placeholder="Type your own question…" onkeyup="document.getElementById('ask-box').textContent = this.value || 'Tap a question above, or type your own here to copy.'">
+      <button onclick="copyTyped()">Copy</button>
+    </div>
   </div>
-  <div class="ask-result" id="ask-result"></div>
+  <a href="https://claude.ai/download" class="btn btn-blush" style="text-decoration:none;margin-top:4px">Open the Claude app →</a>
+  <div id="copy-toast" class="copy-toast">Copied — now paste it in the Claude app</div>
 </div>
+
 
 <!-- ⑤ NUTRITION GUIDE -->
 <div class="page" id="page-nutrition">
@@ -527,6 +716,17 @@
   </div>
 
   <p style="font-size:12px;color:var(--stone-mid);text-align:center;padding:8px 0 16px;line-height:1.6">Always discuss your specific nutritional needs with your Lead Maternity Carer (LMC) or GP.</p>
+</div>
+
+<!-- RECIPE MODAL -->
+<div class="recipe-overlay" id="recipe-overlay">
+  <div class="recipe-sheet">
+    <div class="recipe-header">
+      <div class="recipe-title" id="recipe-title">Recipe</div>
+      <button class="recipe-close" onclick="closeRecipe()" aria-label="Close recipe">✕</button>
+    </div>
+    <div class="recipe-body" id="recipe-body"></div>
+  </div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -631,15 +831,24 @@ function loadJSON() {
   if (loaded) document.getElementById('paste-area').style.display = 'none';
 }
 
+function mealRow(label, name) {
+  const safe = name.replace(/'/g, "\\'");
+  return `<div class="meal-row" onclick="openRecipe('${safe}')">
+    <div class="meal-label">${label}</div>
+    <div class="meal-name">${name} <span class="recipe-cue">recipe ›</span></div>
+  </div>`;
+}
+
 function renderPlan(days) {
-  const html = `<div class="card-title" style="margin-bottom:10px">Swipe to see the week →</div>
+  const html = `<div class="card-title" style="margin-bottom:6px">Swipe to see the week →</div>
+    <div class="plan-hint">Tap any meal for a full pregnancy-safe recipe</div>
     <div class="day-scroll">${days.map(d=>`
       <div class="day-card">
         <div class="day-name">${d.day}</div>
-        <div class="meal-row"><div class="meal-label">Breakfast</div><div class="meal-name">${d.breakfast}</div></div>
-        <div class="meal-row"><div class="meal-label">Lunch</div><div class="meal-name">${d.lunch}</div></div>
-        <div class="meal-row"><div class="meal-label">Dinner</div><div class="meal-name">${d.dinner}</div></div>
-        <div class="meal-row"><div class="meal-label">Snack</div><div class="meal-name">${d.snack}</div></div>
+        ${mealRow('Breakfast', d.breakfast)}
+        ${mealRow('Lunch', d.lunch)}
+        ${mealRow('Dinner', d.dinner)}
+        ${mealRow('Snack', d.snack)}
       </div>`).join('')}
     </div>`;
   document.getElementById('plan-output').innerHTML = html;
@@ -659,127 +868,98 @@ function renderShopping(sections) {
     </div>`).join('');
 }
 
-// ── FOOD PHOTO CHECKER ──
-function handlePhoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    const img = document.getElementById('preview-img');
-    img.src = ev.target.result;
-    img.style.display = 'block';
-    document.getElementById('result-banner').style.display = 'none';
-    document.getElementById('result-actions').style.display = 'none';
-    checkFood(ev.target.result);
-  };
-  reader.readAsDataURL(file);
+// ── FOOD CHECKER (copy question for Claude app) ──
+function showToast(msg) {
+  const t = document.getElementById('copy-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-async function checkFood(dataUrl) {
-  document.getElementById('check-spinner').style.display = 'block';
-  const base64 = dataUrl.split(',')[1];
-  const mediaType = dataUrl.split(';')[0].split(':')[1];
-
-  const systemPrompt = `You are a pregnancy food safety expert with deep knowledge of NZ Ministry of Health guidelines for pregnant women. 
-When given a food photo, identify what food is shown and assess its safety for a pregnant woman in New Zealand.
-
-Respond in this exact JSON format:
-{"verdict":"SAFE"|"CAUTION"|"AVOID","title":"short verdict (max 8 words)","detail":"2-4 sentences explaining safety, any NZ-specific notes, and what to watch out for. Be warm and practical."}
-
-SAFE = fine to eat as shown
-CAUTION = safe with conditions (e.g. must be fully cooked, check pasteurisation)  
-AVOID = should not eat during pregnancy
-
-Base your assessment on: listeria risk, mercury levels, raw/undercooked concerns, unpasteurised dairy, excess vitamin A, alcohol content, and other NZ MoH pregnancy guidelines.`;
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 400,
-        system: systemPrompt,
-        messages: [{
-          role: 'user',
-          content: [{
-            type: 'image',
-            source: { type: 'base64', media_type: mediaType, data: base64 }
-          },{
-            type: 'text',
-            text: 'Is this food safe to eat during pregnancy? Follow NZ Ministry of Health guidelines.'
-          }]
-        }]
-      })
-    });
-    const data = await resp.json();
-    const text = data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    const result = JSON.parse(text);
-    showResult(result);
-  } catch(e) {
-    showResult({verdict:'CAUTION',title:'Could not analyse photo',detail:'We could not analyse this photo right now. When in doubt, check with your LMC or refer to the NZ Ministry of Health pregnancy food safety guidelines at health.govt.nz.'});
+function copyText(str, msg) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(str).then(()=>showToast(msg)).catch(()=>fallbackCopy(str, msg));
+  } else {
+    fallbackCopy(str, msg);
   }
-  document.getElementById('check-spinner').style.display = 'none';
 }
 
-function showResult(r) {
-  const banner = document.getElementById('result-banner');
-  const cls = r.verdict==='SAFE' ? 'safe' : r.verdict==='AVOID' ? 'danger' : 'warn';
-  const emoji = r.verdict==='SAFE' ? '✅' : r.verdict==='AVOID' ? '🚫' : '⚠️';
-  banner.className = 'result-banner ' + cls;
-  banner.style.display = 'block';
-  document.getElementById('result-verdict').textContent = emoji + ' ' + r.title;
-  document.getElementById('result-detail').textContent = r.detail;
-  document.getElementById('result-actions').style.display = 'block';
+function fallbackCopy(str, msg) {
+  const ta = document.createElement('textarea');
+  ta.value = str;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast(msg); } catch(e) {}
+  document.body.removeChild(ta);
 }
 
-function resetChecker() {
-  document.getElementById('preview-img').style.display = 'none';
-  document.getElementById('result-banner').style.display = 'none';
-  document.getElementById('result-actions').style.display = 'none';
-  document.getElementById('photo-input').value = '';
+function copyCheck() {
+  const q = document.getElementById('check-question').textContent;
+  copyText(q, 'Copied — now open the Claude app, add a photo, and paste');
 }
 
-// ── ASK CLAUDE ──
-function setAsk(el) {
-  document.getElementById('ask-input').value = el.textContent;
-  askQuestion();
+// ── ASK (copy question for Claude app) ──
+function copyAsk(el) {
+  const q = el.textContent;
+  document.getElementById('ask-box').textContent = q;
+  copyText(q, 'Copied — now paste it in the Claude app');
 }
 
-async function askQuestion() {
+function copyTyped() {
   const q = document.getElementById('ask-input').value.trim();
-  if (!q) return;
-  document.getElementById('ask-spinner').style.display = 'block';
-  document.getElementById('ask-result').style.display = 'none';
+  if (!q) { showToast('Type a question first'); return; }
+  document.getElementById('ask-box').textContent = q;
+  copyText(q, 'Copied — now paste it in the Claude app');
+}
 
-  const system = `You are a warm, knowledgeable pregnancy nutrition expert for a pregnant woman in New Zealand. You follow NZ Ministry of Health guidelines. Give practical, reassuring, and accurate advice. Keep answers concise (3-5 short paragraphs max). Use plain language — no jargon. Include NZ-specific food context where relevant (NZ seafood, NZ supermarkets, NZ supplements).`;
+// ── RECIPE MODAL (copy prompt for Claude app) ──
+function openRecipe(mealName) {
+  const overlay = document.getElementById('recipe-overlay');
+  const body = document.getElementById('recipe-body');
+  document.getElementById('recipe-title').textContent = mealName;
 
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 600,
-        system,
-        messages: [{ role: 'user', content: q }]
-      })
-    });
-    const data = await resp.json();
-    const reply = data.content.map(b=>b.text||'').join('');
-    document.getElementById('ask-result').textContent = reply;
-    document.getElementById('ask-result').style.display = 'block';
-  } catch(e) {
-    document.getElementById('ask-result').textContent = 'Could not connect right now. Please try again.';
-    document.getElementById('ask-result').style.display = 'block';
+  const prompt = `Write me a complete pregnancy-safe recipe for "${mealName}", following NZ Ministry of Health guidelines. Include ingredients (using NZ products), step-by-step method, prep and cook times, and a note on which pregnancy nutrients it provides. Make sure all meat, chicken, seafood and eggs are fully cooked and there's no unpasteurised dairy, raw egg, high-mercury fish, or alcohol.`;
+
+  body.innerHTML = `
+    <p style="font-size:14px;color:var(--stone);line-height:1.6;margin-bottom:16px">Get a full step-by-step, pregnancy-safe recipe for <strong>${mealName}</strong> from the Claude app.</p>
+    <div class="card-title">Copy this prompt</div>
+    <div class="copy-box" id="recipe-prompt">${prompt}</div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:12px" onclick="copyRecipePrompt()">📋 Copy recipe prompt</button>
+    <a href="https://claude.ai/download" class="btn btn-blush" style="text-decoration:none;margin-top:10px">Open the Claude app →</a>
+    <div id="recipe-toast" class="copy-toast"></div>
+  `;
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function copyRecipePrompt() {
+  const p = document.getElementById('recipe-prompt').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(p).then(()=>recipeToast()).catch(()=>recipeToast());
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = p; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    recipeToast();
   }
-  document.getElementById('ask-spinner').style.display = 'none';
+}
+
+function recipeToast() {
+  const t = document.getElementById('recipe-toast');
+  if (!t) return;
+  t.textContent = 'Copied — now paste it in the Claude app';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function closeRecipe() {
+  document.getElementById('recipe-overlay').style.display = 'none';
+  document.body.style.overflow = '';
 }
 </script>
 </body>
