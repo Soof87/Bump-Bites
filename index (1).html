@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bump Bites">
+<title>Bump Bites — Pregnancy Meal Planner</title>
+<style>
+  :root {
+    --sage: #5a7a5a;
+    --sage-light: #e8f0e8;
+    --sage-mid: #c2d4c2;
+    --blush: #e8897a;
+    --blush-light: #fdf0ee;
+    --cream: #faf8f5;
+    --stone: #4a4640;
+    --stone-mid: #8a8480;
+    --stone-light: #e8e4e0;
+    --white: #ffffff;
+    --safe-green: #2d6e4e;
+    --safe-bg: #eaf5ef;
+    --warn-orange: #b85c00;
+    --warn-bg: #fff4e8;
+    --danger-red: #c0392b;
+    --danger-bg: #fdecea;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --nav-h: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    background: var(--cream);
+    color: var(--stone);
+    min-height: 100vh;
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  }
+
+  /* ── TOP HEADER ── */
+  .top-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--stone-light);
+    padding: 16px 20px 12px;
+    padding-top: calc(16px + env(safe-area-inset-top));
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sage);
+    letter-spacing: -0.3px;
+  }
+  .top-bar p {
+    font-size: 13px;
+    color: var(--stone-mid);
+    margin-top: 2px;
+  }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--stone-light);
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--stone-mid);
+    font-size: 10px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .nav-btn.active { color: var(--sage); }
+  .nav-btn svg { width: 22px; height: 22px; stroke-width: 1.8; }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--stone-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); opacity: 0.85; }
+  .btn-primary { background: var(--sage); color: white; width: 100%; justify-content: center; }
+  .btn-secondary { background: var(--sage-light); color: var(--sage); }
+  .btn-blush { background: var(--blush); color: white; width: 100%; justify-content: center; }
+  .btn-outline { background: transparent; color: var(--sage); border: 1.5px solid var(--sage); width: 100%; justify-content: center; }
+
+  /* ── SELECTS ── */
+  select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--stone-light);
+    background: var(--white);
+    color: var(--stone);
+    font-size: 15px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a8480' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    margin-bottom: 10px;
+  }
+
+  /* ── MEAL PLAN GRID ── */
+  .day-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+  .day-scroll::-webkit-scrollbar { display: none; }
+  .day-card {
+    min-width: 140px;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 14px;
+    scroll-snap-align: start;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    flex-shrink: 0;
+  }
+  .day-card .day-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sage);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .meal-row { margin-bottom: 8px; }
+  .meal-row .meal-label { font-size: 10px; color: var(--stone-mid); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .meal-row .meal-name { font-size: 13px; color: var(--stone); line-height: 1.3; margin-top: 1px; }
+  .meal-row { cursor: pointer; border-radius: 6px; padding: 4px; margin: 0 -4px 4px; transition: background 0.12s; }
+  .meal-row:active { background: var(--sage-light); }
+  .recipe-cue { color: var(--sage); font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .plan-hint { font-size: 12px; color: var(--blush); margin-bottom: 12px; font-weight: 500; }
+
+  /* RECIPE MODAL */
+  .recipe-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(74,70,64,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .recipe-sheet {
+    background: var(--cream);
+    width: 100%;
+    max-width: 500px;
+    max-height: 88vh;
+    border-radius: 22px 22px 0 0;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .recipe-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--stone-light);
+    flex-shrink: 0;
+  }
+  .recipe-title { font-size: 18px; font-weight: 700; color: var(--sage); line-height: 1.2; padding-right: 12px; }
+  .recipe-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--stone-light);
+    color: var(--stone);
+    font-size: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .recipe-body {
+    padding: 18px 20px calc(28px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .recipe-meta {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .recipe-meta-item {
+    font-size: 13px;
+    color: var(--stone-mid);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .recipe-safety {
+    background: var(--safe-bg);
+    border-left: 4px solid var(--safe-green);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: var(--safe-green);
+    line-height: 1.5;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 8px;
+  }
+  .recipe-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--stone-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 18px 0 10px;
+  }
+  .recipe-ingredients {
+    list-style: none;
+  }
+  .recipe-ingredients li {
+    font-size: 15px;
+    color: var(--stone);
+    padding: 8px 0 8px 26px;
+    border-bottom: 1px solid var(--stone-light);
+    position: relative;
+    line-height: 1.4;
+  }
+  .recipe-ingredients li:before {
+    content: '';
+    position: absolute;
+    left: 6px; top: 15px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+  }
+  .recipe-steps {
+    padding-left: 0;
+    counter-reset: step;
+    list-style: none;
+  }
+  .recipe-steps li {
+    font-size: 15px;
+    color: var(--stone);
+    line-height: 1.6;
+    padding: 0 0 16px 40px;
+    position: relative;
+    counter-increment: step;
+  }
+  .recipe-steps li:before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--sage);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .recipe-nutrition {
+    background: var(--blush-light);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--blush);
+    line-height: 1.5;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* COPY BOX + HOW-TO + TOAST */
+  .copy-box {
+    background: var(--cream);
+    border: 1.5px solid var(--stone-light);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--stone);
+  }
+  .howto-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--stone);
+    line-height: 1.5;
+    padding: 6px 0;
+  }
+  .howto-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--sage);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .copy-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--nav-h) + 20px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(20px);
+    background: var(--stone);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11px 18px;
+    border-radius: 50px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 300;
+    max-width: 90%;
+    text-align: center;
+  }
+  .copy-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── FOOD CHECKER ── */
+  .upload-zone {
+    border: 2px dashed var(--sage-mid);
+    border-radius: var(--radius);
+    padding: 36px 20px;
+    text-align: center;
+    background: var(--sage-light);
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 14px;
+  }
+  .upload-zone:active { background: var(--sage-mid); }
+  .upload-zone svg { width: 40px; height: 40px; stroke: var(--sage); margin-bottom: 10px; }
+  .upload-zone p { font-size: 15px; color: var(--sage); font-weight: 600; }
+  .upload-zone span { font-size: 13px; color: var(--stone-mid); }
+  #photo-input { display: none; }
+
+  .preview-img {
+    width: 100%;
+    border-radius: var(--radius);
+    max-height: 260px;
+    object-fit: cover;
+    margin-bottom: 14px;
+    display: none;
+  }
+
+  /* ── RESULT BANNERS ── */
+  .result-banner {
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .result-banner.safe { background: var(--safe-bg); border-left: 4px solid var(--safe-green); }
+  .result-banner.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-orange); }
+  .result-banner.danger { background: var(--danger-bg); border-left: 4px solid var(--danger-red); }
+  .result-banner .verdict {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .result-banner.safe .verdict { color: var(--safe-green); }
+  .result-banner.warn .verdict { color: var(--warn-orange); }
+  .result-banner.danger .verdict { color: var(--danger-red); }
+  .result-banner .detail { font-size: 14px; color: var(--stone); line-height: 1.6; }
+
+  /* ── LOADING ── */
+  .spinner {
+    display: none;
+    text-align: center;
+    padding: 30px;
+    color: var(--stone-mid);
+    font-size: 14px;
+  }
+  .spinner-ring {
+    width: 36px; height: 36px;
+    border: 3px solid var(--sage-light);
+    border-top-color: var(--sage);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SHOPPING LIST ── */
+  .shop-section { margin-bottom: 20px; }
+  .shop-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--stone-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .shop-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .shop-item input[type=checkbox] {
+    width: 20px; height: 20px;
+    accent-color: var(--sage);
+    flex-shrink: 0;
+  }
+  .shop-item .s-name { flex: 1; font-size: 15px; color: var(--stone); }
+  .shop-item .s-qty { font-size: 13px; color: var(--stone-mid); }
+  .shop-item.done .s-name { text-decoration: line-through; color: var(--stone-mid); }
+
+  /* ── NUTRITION TAB ── */
+  .nutrient-bar-wrap { margin-bottom: 14px; }
+  .nutrient-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .nutrient-name { font-size: 14px; font-weight: 600; color: var(--stone); }
+  .nutrient-val { font-size: 12px; color: var(--stone-mid); }
+  .bar-track { height: 8px; background: var(--stone-light); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--sage); transition: width 0.6s ease; }
+  .bar-fill.low { background: var(--blush); }
+
+  .avoid-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--stone-light);
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--stone);
+  }
+  .avoid-item:last-child { border-bottom: none; }
+  .avoid-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── TIPS ── */
+  .tip-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--blush-light);
+    color: var(--blush);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 50px;
+    margin-bottom: 14px;
+  }
+
+  /* ── PLAN PASTE ── */
+  .paste-area {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .paste-area textarea {
+    width: 100%;
+    height: 90px;
+    font-size: 12px;
+    font-family: monospace;
+    padding: 10px;
+    border: 1.5px solid var(--stone-light);
+    border-radius: var(--radius-sm);
+    color: var(--stone);
+    background: var(--cream);
+    resize: none;
+    margin-bottom: 10px;
+  }
+  .paste-label { font-size: 13px; color: var(--stone-mid); margin-bottom: 8px; }
+
+  /* ── EMPTY STATES ── */
+  .empty { text-align: center; padding: 40px 20px; color: var(--stone-mid); }
+  .empty-icon { font-size: 44px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; line-height: 1.5; }
+
+  /* ── ASK CLAUDE ── */
+  .ask-input-wrap { display: flex; gap: 8px; margin-bottom: 14px; }
+  .ask-input-wrap input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 50px;
+    border: 1.5px solid var(--stone-light);
+    font-size: 15px;
+    background: var(--white);
+    color: var(--stone);
+  }
+  .ask-input-wrap button {
+    padding: 12px 18px;
+    border-radius: 50px;
+    border: none;
+    background: var(--sage);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ask-result {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--stone);
+    display: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    white-space: pre-wrap;
+  }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+  .chip {
+    font-size: 13px;
+    padding: 7px 13px;
+    border-radius: 50px;
+    border: 1.5px solid var(--sage-mid);
+    background: var(--sage-light);
+    color: var(--sage);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .chip:active { background: var(--sage-mid); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>🌿 Bump Bites</h1>
+  <p>NZ pregnancy nutrition — powered by Claude AI</p>
+</div>
+
+<!-- PAGES -->
+
+<!-- ① MEAL PLAN -->
+<div class="page active" id="page-plan">
+  <div style="margin-bottom:14px">
+    <select id="tri-select">
+      <option value="1">First trimester</option>
+      <option value="2" selected>Second trimester</option>
+      <option value="3">Third trimester</option>
+    </select>
+    <select id="pref-select">
+      <option value="any">No dietary preference</option>
+      <option value="vegetarian">Vegetarian</option>
+      <option value="vegan">Vegan</option>
+      <option value="gluten-free">Gluten-free</option>
+      <option value="dairy-free">Dairy-free</option>
+    </select>
+    <button class="btn btn-primary" onclick="requestPlan()">✨ Generate my week</button>
+  </div>
+
+  <div class="paste-area" id="paste-area">
+    <div class="paste-label">Paste the JSON from Claude's response below:</div>
+    <textarea id="plan-json" placeholder='{"days":[...]}'></textarea>
+    <button class="btn btn-secondary" onclick="loadJSON()" style="width:100%;justify-content:center">Load plan</button>
+  </div>
+
+  <div id="plan-output">
+    <div class="empty">
+      <div class="empty-icon">🥗</div>
+      <p>Tap <strong>Generate my week</strong> to get a personalised meal plan based on NZ pregnancy guidelines.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ② FOOD CHECKER -->
+<div class="page" id="page-checker">
+  <div class="tip-pill">📸 Photo food checker</div>
+  <p style="font-size:14px;color:var(--stone-mid);margin-bottom:18px;line-height:1.6">Not sure if something's safe to eat? Snap a photo and ask Claude — it checks against NZ Ministry of Health pregnancy guidelines.</p>
+
+  <div class="card" style="background:var(--sage-light);border:none">
+    <div style="font-size:15px;font-weight:600;color:var(--sage);margin-bottom:12px">How to check a food in 3 steps</div>
+    <div class="howto-step"><span class="howto-num">1</span><span>Open the <strong>Claude app</strong> on your phone</span></div>
+    <div class="howto-step"><span class="howto-num">2</span><span>Tap the <strong>camera</strong> or photo icon and take a picture of the food</span></div>
+    <div class="howto-step"><span class="howto-num">3</span><span>Send it with the question below</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Copy this question</div>
+    <div class="copy-box" id="check-question">Is this food safe to eat during pregnancy in New Zealand? Please follow NZ Ministry of Health guidelines and tell me if it's safe, needs caution, or to avoid it.</div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:10px" onclick="copyCheck()">📋 Copy question</button>
+  </div>
+
+  <a href="https://claude.ai/download" class="btn btn-blush" style="text-decoration:none;margin-top:4px">Open the Claude app →</a>
+
+  <div class="card" style="margin-top:14px">
+    <div class="card-title">Quick reference — common foods</div>
+    <div style="font-size:13px;line-height:1.9;color:var(--stone)">
+      ✅ Hard cheeses, cooked seafood, well-cooked eggs, pasteurised milk<br>
+      ⚠️ Sushi, soft-serve ice cream, pre-packaged salads, leftovers (reheat well)<br>
+      🚫 Brie/camembert (uncooked), pâté, raw fish, deli meats, runny eggs
+    </div>
+  </div>
+</div>
+
+<!-- ③ SHOPPING LIST -->
+<div class="page" id="page-shopping">
+  <div id="shopping-output">
+    <div class="empty">
+      <div class="empty-icon">🛒</div>
+      <p>Generate a meal plan first — your shopping list will appear here automatically.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ④ ASK CLAUDE -->
+<div class="page" id="page-ask">
+  <p style="font-size:14px;color:var(--stone-mid);margin-bottom:16px;line-height:1.6">Tap a question to copy it, then paste it into the Claude app for a full, up-to-date answer based on NZ guidelines.</p>
+  <div class="chip-row">
+    <div class="chip" onclick="copyAsk(this)">Foods high in folate</div>
+    <div class="chip" onclick="copyAsk(this)">Safe NZ seafood while pregnant</div>
+    <div class="chip" onclick="copyAsk(this)">Iron-rich pregnancy meals</div>
+    <div class="chip" onclick="copyAsk(this)">Snack ideas for pregnancy nausea</div>
+    <div class="chip" onclick="copyAsk(this)">Foods to avoid in pregnancy NZ</div>
+    <div class="chip" onclick="copyAsk(this)">Iodine sources in NZ</div>
+    <div class="chip" onclick="copyAsk(this)">Calcium without dairy</div>
+    <div class="chip" onclick="copyAsk(this)">What supplements do I need</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Your question</div>
+    <div class="copy-box" id="ask-box">Tap a question above, or type your own here to copy.</div>
+    <div class="ask-input-wrap" style="margin-top:12px;margin-bottom:0">
+      <input type="text" id="ask-input" placeholder="Type your own question…" onkeyup="document.getElementById('ask-box').textContent = this.value || 'Tap a question above, or type your own here to copy.'">
+      <button onclick="copyTyped()">Copy</button>
+    </div>
+  </div>
+  <a href="https://claude.ai/download" class="btn btn-blush" style="text-decoration:none;margin-top:4px">Open the Claude app →</a>
+  <div id="copy-toast" class="copy-toast">Copied — now paste it in the Claude app</div>
+</div>
+
+
+<!-- ⑤ NUTRITION GUIDE -->
+<div class="page" id="page-nutrition">
+  <div class="card">
+    <div class="card-title">Daily nutrient targets</div>
+    <select id="tri-nut" onchange="renderNutrients()" style="margin-bottom:16px">
+      <option value="1">First trimester</option>
+      <option value="2" selected>Second trimester</option>
+      <option value="3">Third trimester</option>
+    </select>
+    <div id="nutrient-bars"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">NZ supplements needed</div>
+    <div style="font-size:14px;line-height:1.8;color:var(--stone)">
+      <div style="padding:8px 0;border-bottom:1px solid var(--stone-light)">💊 <strong>Folic acid 800 mcg/day</strong> — from before conception to 12 weeks</div>
+      <div style="padding:8px 0;border-bottom:1px solid var(--stone-light)">💊 <strong>Iodine 150 mcg/day</strong> — throughout pregnancy & breastfeeding</div>
+      <div style="padding:8px 0">💊 <strong>Vitamin D</strong> — ask your LMC, especially in winter</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Foods to avoid</div>
+    <div id="avoid-list">
+      <div class="avoid-item"><span class="avoid-icon">🚫</span><span>Raw or undercooked meat, chicken, and seafood</span></div>
+      <div class="avoid-item"><span class="avoid-icon">🚫</span><span>Pre-made salads, deli meats, cold chicken, pâté (listeria risk)</span></div>
+      <div class="avoid-item"><span class="avoid-icon">🚫</span><span>Unpasteurised dairy; brie, camembert, feta (unless cooked through)</span></div>
+      <div class="avoid-item"><span class="avoid-icon">🚫</span><span>Shark, marlin, orange roughy, gemfish (high mercury)</span></div>
+      <div class="avoid-item"><span class="avoid-icon">🚫</span><span>Liver and liver products (too much vitamin A)</span></div>
+      <div class="avoid-item"><span class="avoid-icon">🚫</span><span>Alcohol — no safe level in pregnancy</span></div>
+      <div class="avoid-item"><span class="avoid-icon">⚠️</span><span>Caffeine — limit to 200 mg/day (about 2 flat whites)</span></div>
+      <div class="avoid-item"><span class="avoid-icon">✅</span><span>Safe NZ seafood: salmon, snapper, kahawai, tarakihi, mussels, cooked oysters</span></div>
+    </div>
+  </div>
+
+  <p style="font-size:12px;color:var(--stone-mid);text-align:center;padding:8px 0 16px;line-height:1.6">Always discuss your specific nutritional needs with your Lead Maternity Carer (LMC) or GP.</p>
+</div>
+
+<!-- RECIPE MODAL -->
+<div class="recipe-overlay" id="recipe-overlay">
+  <div class="recipe-sheet">
+    <div class="recipe-header">
+      <div class="recipe-title" id="recipe-title">Recipe</div>
+      <button class="recipe-close" onclick="closeRecipe()" aria-label="Close recipe">✕</button>
+    </div>
+    <div class="recipe-body" id="recipe-body"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('plan', this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    Meal plan
+  </button>
+  <button class="nav-btn" onclick="showPage('checker', this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    Food check
+  </button>
+  <button class="nav-btn" onclick="showPage('shopping', this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+    Shopping
+  </button>
+  <button class="nav-btn" onclick="showPage('ask', this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+    Ask
+  </button>
+  <button class="nav-btn" onclick="showPage('nutrition', this)">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    Nutrition
+  </button>
+</nav>
+
+<script>
+const API_KEY_PLACEHOLDER = 'YOUR_API_KEY';
+
+// ── NAV ──
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'nutrition') renderNutrients();
+}
+
+// ── NUTRIENTS ──
+function renderNutrients() {
+  const t = document.getElementById('tri-nut').value;
+  const data = {
+    '1': [{n:'Folate',p:80,v:'640/800 mcg',low:1},{n:'Iron',p:56,v:'15/27 mg',low:1},{n:'Calcium',p:70,v:'700/1000 mg'},{n:'Iodine',p:60,v:'90/150 mcg',low:1},{n:'Vitamin D',p:50,v:'5/10 mcg',low:1}],
+    '2': [{n:'Folate',p:88,v:'704/800 mcg'},{n:'Iron',p:70,v:'19/27 mg'},{n:'Calcium',p:85,v:'850/1000 mg'},{n:'Iodine',p:80,v:'120/150 mcg'},{n:'Omega-3 DHA',p:65,v:'195/300 mg'}],
+    '3': [{n:'Folate',p:90,v:'720/800 mcg'},{n:'Iron',p:78,v:'21/27 mg'},{n:'Calcium',p:90,v:'900/1000 mg'},{n:'Iodine',p:85,v:'128/150 mcg'},{n:'Omega-3 DHA',p:75,v:'225/300 mg'}]
+  };
+  document.getElementById('nutrient-bars').innerHTML = (data[t]||data['2']).map(x=>`
+    <div class="nutrient-bar-wrap">
+      <div class="nutrient-header"><span class="nutrient-name">${x.n}</span><span class="nutrient-val">${x.v}</span></div>
+      <div class="bar-track"><div class="bar-fill${x.low?' low':''}" style="width:${x.p}%"></div></div>
+    </div>`).join('');
+}
+renderNutrients();
+
+// ── MEAL PLAN ──
+function requestPlan() {
+  const tri = ['','first','second','third'][+document.getElementById('tri-select').value];
+  const pref = document.getElementById('pref-select').value;
+  const prefText = pref === 'any' ? '' : `, ${pref} diet`;
+  document.getElementById('paste-area').style.display = 'block';
+  document.getElementById('plan-output').innerHTML = `<div class="card" style="background:var(--sage-light);border:1.5px dashed var(--sage-mid)">
+    <div style="font-size:14px;color:var(--sage);line-height:1.7">
+      <strong>Step 1:</strong> Copy the prompt below and send it to Claude in a new chat tab.<br>
+      <strong>Step 2:</strong> Copy the JSON response and paste it in the box below.<br><br>
+      <strong>Your prompt:</strong><br>
+      <div style="background:white;border-radius:8px;padding:10px;font-size:12px;font-family:monospace;margin-top:6px;word-break:break-word;color:var(--stone)">Generate a 7-day NZ pregnancy meal plan for ${tri} trimester${prefText}. Return ONLY a JSON object: {"days":[{"day":"Mon","breakfast":"meal","lunch":"meal","dinner":"meal","snack":"snack"},... for all 7 days]}. Keep names 3-5 words. All meals safe per NZ MoH pregnancy guidelines. Then on a new line write SHOPPING: followed by {"sections":[{"name":"Produce","items":[{"name":"x","qty":"y"}]},{"name":"Protein & Seafood","items":[]},{"name":"Dairy & Eggs","items":[]},{"name":"Pantry & Grains","items":[]}]}</div>
+    </div>
+  </div>`;
+}
+
+function loadJSON() {
+  const raw = document.getElementById('plan-json').value.trim();
+  // Try to extract days JSON and shopping JSON separately
+  const daysMatch = raw.match(/\{"days":\[[\s\S]*?\]\}/);
+  const shopMatch = raw.match(/\{"sections":\[[\s\S]*\]/);
+  let loaded = false;
+  if (daysMatch) {
+    try {
+      const plan = JSON.parse(daysMatch[0]);
+      if (plan.days) { renderPlan(plan.days); loaded = true; }
+    } catch(e) {}
+  }
+  if (shopMatch) {
+    try {
+      // close the JSON properly
+      let shopStr = shopMatch[0];
+      if (!shopStr.endsWith('}')) shopStr += '}';
+      const shop = JSON.parse(shopStr);
+      if (shop.sections) renderShopping(shop.sections);
+    } catch(e) {}
+  }
+  if (!loaded) {
+    // try parsing the whole thing
+    try {
+      const d = JSON.parse(raw);
+      if (d.days) { renderPlan(d.days); loaded = true; }
+      if (d.sections) renderShopping(d.sections);
+    } catch(e) {
+      alert('Could not read that JSON. Make sure you copied the full block from Claude.');
+    }
+  }
+  if (loaded) document.getElementById('paste-area').style.display = 'none';
+}
+
+function mealRow(label, name) {
+  const safe = name.replace(/'/g, "\\'");
+  return `<div class="meal-row" onclick="openRecipe('${safe}')">
+    <div class="meal-label">${label}</div>
+    <div class="meal-name">${name} <span class="recipe-cue">recipe ›</span></div>
+  </div>`;
+}
+
+function renderPlan(days) {
+  const html = `<div class="card-title" style="margin-bottom:6px">Swipe to see the week →</div>
+    <div class="plan-hint">Tap any meal for a full pregnancy-safe recipe</div>
+    <div class="day-scroll">${days.map(d=>`
+      <div class="day-card">
+        <div class="day-name">${d.day}</div>
+        ${mealRow('Breakfast', d.breakfast)}
+        ${mealRow('Lunch', d.lunch)}
+        ${mealRow('Dinner', d.dinner)}
+        ${mealRow('Snack', d.snack)}
+      </div>`).join('')}
+    </div>`;
+  document.getElementById('plan-output').innerHTML = html;
+}
+
+function renderShopping(sections) {
+  const icons = {'Produce':'🥦','Protein & Seafood':'🐟','Dairy & Eggs':'🥛','Pantry & Grains':'🌾'};
+  document.getElementById('shopping-output').innerHTML = sections.map(sec=>`
+    <div class="shop-section">
+      <div class="shop-section-title">${icons[sec.name]||'🛒'} ${sec.name}</div>
+      ${sec.items.map(it=>`
+        <div class="shop-item" id="si-${Math.random().toString(36).slice(2)}">
+          <input type="checkbox" onchange="this.closest('.shop-item').classList.toggle('done',this.checked)">
+          <span class="s-name">${it.name}</span>
+          <span class="s-qty">${it.qty}</span>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── FOOD CHECKER (copy question for Claude app) ──
+function showToast(msg) {
+  const t = document.getElementById('copy-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function copyText(str, msg) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(str).then(()=>showToast(msg)).catch(()=>fallbackCopy(str, msg));
+  } else {
+    fallbackCopy(str, msg);
+  }
+}
+
+function fallbackCopy(str, msg) {
+  const ta = document.createElement('textarea');
+  ta.value = str;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast(msg); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function copyCheck() {
+  const q = document.getElementById('check-question').textContent;
+  copyText(q, 'Copied — now open the Claude app, add a photo, and paste');
+}
+
+// ── ASK (copy question for Claude app) ──
+function copyAsk(el) {
+  const q = el.textContent;
+  document.getElementById('ask-box').textContent = q;
+  copyText(q, 'Copied — now paste it in the Claude app');
+}
+
+function copyTyped() {
+  const q = document.getElementById('ask-input').value.trim();
+  if (!q) { showToast('Type a question first'); return; }
+  document.getElementById('ask-box').textContent = q;
+  copyText(q, 'Copied — now paste it in the Claude app');
+}
+
+// ── RECIPE MODAL (copy prompt for Claude app) ──
+function openRecipe(mealName) {
+  const overlay = document.getElementById('recipe-overlay');
+  const body = document.getElementById('recipe-body');
+  document.getElementById('recipe-title').textContent = mealName;
+
+  const prompt = `Write me a complete pregnancy-safe recipe for "${mealName}", following NZ Ministry of Health guidelines. Include ingredients (using NZ products), step-by-step method, prep and cook times, and a note on which pregnancy nutrients it provides. Make sure all meat, chicken, seafood and eggs are fully cooked and there's no unpasteurised dairy, raw egg, high-mercury fish, or alcohol.`;
+
+  body.innerHTML = `
+    <p style="font-size:14px;color:var(--stone);line-height:1.6;margin-bottom:16px">Get a full step-by-step, pregnancy-safe recipe for <strong>${mealName}</strong> from the Claude app.</p>
+    <div class="card-title">Copy this prompt</div>
+    <div class="copy-box" id="recipe-prompt">${prompt}</div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:12px" onclick="copyRecipePrompt()">📋 Copy recipe prompt</button>
+    <a href="https://claude.ai/download" class="btn btn-blush" style="text-decoration:none;margin-top:10px">Open the Claude app →</a>
+    <div id="recipe-toast" class="copy-toast"></div>
+  `;
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function copyRecipePrompt() {
+  const p = document.getElementById('recipe-prompt').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(p).then(()=>recipeToast()).catch(()=>recipeToast());
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = p; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    recipeToast();
+  }
+}
+
+function recipeToast() {
+  const t = document.getElementById('recipe-toast');
+  if (!t) return;
+  t.textContent = 'Copied — now paste it in the Claude app';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function closeRecipe() {
+  document.getElementById('recipe-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+</script>
+</body>
+</html>
